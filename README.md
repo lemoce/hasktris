@@ -1,4 +1,4 @@
 # Hasktris
 
-Tetris-clone using Haskell and ncurses.
+Tetris-clone using Haskell and HSCurses.
 

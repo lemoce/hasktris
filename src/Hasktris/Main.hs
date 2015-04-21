@@ -1,39 +1,37 @@
 module Hasktris.Main (main) where
 
 import           Hasktris.Shapes
-import           UI.NCurses
+import           UI.HSCurses.Curses
+
+
+
+dealTetriminos piece pY pX = do erase
+                                drawTetriminos piece pY pX
+                                c <- getCh
+                                case c of
+                                  KeyChar '0' -> dealTetriminos (tetriminos !! 0) pY pX
+                                  KeyChar '1' -> dealTetriminos (tetriminos !! 1) pY pX
+                                  KeyChar '2' -> dealTetriminos (tetriminos !! 2) pY pX
+                                  KeyChar '3' -> dealTetriminos (tetriminos !! 3) pY pX
+                                  KeyChar '4' -> dealTetriminos (tetriminos !! 4) pY pX
+                                  KeyChar '5' -> dealTetriminos (tetriminos !! 5) pY pX
+                                  KeyChar '6' -> dealTetriminos (tetriminos !! 6) pY pX
+                                  KeyUp -> dealTetriminos piece (pY - 1) pX
+                                  KeyDown -> dealTetriminos piece (pY + 1) pX
+                                  KeyLeft -> dealTetriminos piece pY (pX - 1)
+                                  KeyRight -> dealTetriminos piece pY (pX + 1)
+                                  KeyChar ' ' -> dealTetriminos (cwRotate piece) pY pX
+                                  _ -> return ()
+
 
 main :: IO ()
-main = runCurses $ do
-    setEcho False
-    w <- defaultWindow
-    updateWindow w $ do moveCursor 1 10
-                        drawString "Hello World!"
-                        moveCursor 3 10
-                        drawString "(press q to quit)"
-                        drawTetriminos 5 10 (tetriminos !! 0)
-                        drawTetriminos 7 10 (tetriminos !! 1)
-                        drawTetriminos 9 10 (tetriminos !! 2)
-                        drawTetriminos 11 10 (tetriminos !! 3)
-                        drawTetriminos 13 10 (tetriminos !! 4)
-                        drawTetriminos 15 10 (tetriminos !! 5)
-                        drawTetriminos 17 10 (tetriminos !! 6)
-                        let myPiece = tetriminos !! 5
-                        drawTetriminos 5 20 (myPiece)
-                        drawTetriminos 9 20 (cwRotate myPiece)
-                        drawTetriminos 13 20 (cwRotate (cwRotate myPiece))
-                        drawTetriminos 17 20 (cwRotate (cwRotate (cwRotate myPiece)))
-                        drawTetriminos 5 30 (myPiece)
-                        drawTetriminos 9 30 (ccwRotate myPiece)
-                        drawTetriminos 13 30 (ccwRotate (ccwRotate myPiece))
-                        drawTetriminos 17 30 (ccwRotate (ccwRotate (ccwRotate myPiece)))
-    render
-    waitFor w (\ev -> ev == EventCharacter 'q' || ev == EventCharacter 'Q')
+main = do initCurses
+          keypad stdScr True
+          echo False
+          cursSet CursorInvisible
+          (sizeY, sizeX) <- scrSize
+          let myPiece = tetriminos !! 4
+          dealTetriminos myPiece (sizeY `div` 2) (sizeX `div` 2)
+          endWin
 
-waitFor :: Window -> (Event -> Bool) -> Curses ()
-waitFor w p = loop where
-        loop = do ev <- getEvent w Nothing
-                  case ev of
-                       Nothing -> loop
-                       Just ev' -> if p ev' then return () else loop
 
